@@ -21,11 +21,19 @@
 from typing import TYPE_CHECKING
 
 from .core._url import Url
+from .family.custom import CustomFamily
 from .family.nuget import NugetFamily
 from .family.shield import ShieldFamily
 
+from .sources import custom as _custom_sources
+from .sources.custom.base import CustomBackendSource as _CustomBackendSource
+from .sources.base import SourcesCollection as _SourcesCollection
+
 if TYPE_CHECKING:  # pragma: no cover
     from .core import SupportsResources
+
+
+_all_sources: "_SourcesCollection" = _SourcesCollection(_custom_sources)
 
 
 _DEFAULT_NUGET_FEED_V3_URL = "https://api.nuget.org/v3/index.json"
@@ -36,3 +44,4 @@ def configure(app: "SupportsResources") -> None:
         NugetFamily(Url.static(_DEFAULT_NUGET_FEED_V3_URL).source),
     )
     app.add_family(ShieldFamily())
+    app.add_family(CustomFamily(_all_sources.get_sources(type_to_bind=_CustomBackendSource)))
