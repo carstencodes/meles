@@ -2,10 +2,13 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "linting", ":linting", "unit-test"]
-strategy = ["cross_platform", "inherit_metadata"]
-lock_version = "4.4.1"
-content_hash = "sha256:c4f35f4fdd647bc25aed9fd74e289ed2a01999b8663f1eb02971980d5d54ce8b"
+groups = ["default", "linting", "unit-test"]
+strategy = ["inherit_metadata"]
+lock_version = "4.5.0"
+content_hash = "sha256:5b10e8b6e1d6693a3ea37a7fa16d42ff7d30ba173c25ea7dc1587dbd6f4f6d6f"
+
+[[metadata.targets]]
+requires_python = ">=3.11"
 
 [[package]]
 name = "cachetools"
