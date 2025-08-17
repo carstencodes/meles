@@ -1,6 +1,6 @@
 [project]
 name = "meles"
-version = "0.3.0"
+version = "0.4.0-alpha1"
 description = "Meles (the zoologic family of badgers is a simple service to create and host bages for your software projects"
 authors = [
     {name = "Carsten Igel", email = "cig@bite-that-bit.de"},
