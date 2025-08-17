@@ -21,8 +21,12 @@ from __future__ import annotations
 
 import http
 from abc import ABC, abstractmethod
+from inspect import getmembers, isclass
 from logging import Logger, getLogger
-from typing import TYPE_CHECKING
+from pkgutil import iter_modules, ModuleInfo
+from sys import modules
+from types import ModuleType
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from ..core import (
     LOGGER_NAME,
@@ -94,3 +98,52 @@ class RequestSourceBase(SourceBase, ABC):
             )
 
         return color
+
+
+TInstance = TypeVar("TInstance")
+
+
+class SourcesCollection:
+    def __init__(self, module_ns: "ModuleType") -> "None":
+        self.__module = module_ns
+
+    def get_sources[T: TInstance](self, type_to_bind: "type") -> "dict[str, T]":  # type: ignore
+        logger = getLogger(LOGGER_NAME)
+        instances: "dict[str, T]" = {}  # type: ignore
+
+        logger.debug("Searching module %s for child modules", self.__module.__name__)
+        children: "list[ModuleInfo]" = list(
+            iter_modules(
+                self.__module.__path__,
+                self.__module.__name__ + ".",
+            )
+        )
+
+        for child in children:
+            logger.debug("Found child module %s", child.name)
+            if child.name not in modules:
+                logger.warning("Failed to find child module %s", child.name)
+                continue
+
+            module = modules[child.name]
+            for name, member in getmembers(module):
+                logger.debug("Analyzing member %s", name)
+                if isclass(member) and issubclass(member, type_to_bind):
+                    logger.debug("Found matching type: %s", member.__name__)
+                    clazz: "type[T]" = cast(type[T], member)  # type: ignore
+                    try:
+                        instance: "T" = clazz()  # type: ignore
+                    except Exception as e:
+                        logger.warning(
+                            "Failed to instantiate class %s",
+                            clazz.__qualname__,
+                            exc_info=e,
+                        )
+                    
+                    instance_name = member.__name__
+                    if hasattr(instance, "name"):
+                        instance_name = str(getattr(instance, "name"))
+
+                    instances[instance_name] = instance
+
+        return instances
